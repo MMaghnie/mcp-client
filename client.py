@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 
 load_dotenv() # load environment variables from .env
 
-MODEL = "claude-haiku-4-5-20251001" # TODO convert this to an env var
+MODEL = "claude-haiku-4-5-20251001"
 anthropic = Anthropic()
 
 
@@ -32,6 +32,7 @@ def server_params(server_script_path: str) -> StdioServerParameters:
 
 async def process_query(client: Client, query: str) -> str:
     """Process a query using Claude and available tools"""
+    # this functon can be modified to handle custom tool types
     messages = [
         {
             "role": "user",
@@ -49,7 +50,7 @@ async def process_query(client: Client, query: str) -> str:
     # Initial Claude API call
     response = anthropic.messages.create(
         model=MODEL,
-        max_tokens=1000, # TODO make this env var too
+        max_tokens=1000,
         messages=messages,
         tools=available_tools
     )
@@ -97,3 +98,43 @@ async def process_query(client: Client, query: str) -> str:
                 final_text.append(content.text)
 
     return "\n".join(final_text)
+
+
+async def chat_loop(client: Client) -> None:
+    """Run an interactive chat loop"""
+    print("\nMCP Client Started!")
+    print("Type your queries or 'quit' to exit.")
+
+    while True:
+        try:
+            # Using input() uses a parallel worker, so the event loop can service your connection
+            query = (await asyncio.to_thread(input, "\nQuery: ")).strip()
+        except EOFError:
+            break
+
+        if query.lower() == 'quit':
+            break
+
+        try:
+            response = await process_query(client, query)
+            print("\n" + response)
+        except Exception as e:
+            print(f"\nError: {e}")
+
+
+async def main() -> None:
+    if len(sys.argv) < 2:
+        print("Usage: python client.py <path_to_server_script>")
+        sys.exit(1)
+
+    # Whole connection lifecycle with the server
+    async with Client(stdio_client(server_params(sys.argv[1]))) as client:
+        tool_list = await client.list_tools()
+        tool_names = [tool.name for tool in tool_list.tools]
+        print("\nConnected to server with tools:", tool_names)
+
+        await chat_loop(client)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
