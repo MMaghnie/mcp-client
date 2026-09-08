@@ -6,12 +6,13 @@ from mcp.client.stdio import stdio_client
 from mcp_types import TextContent
 
 from anthropic import Anthropic
+from anthropic.types import MessageParam, ToolResultBlockParam, ToolUnionParam
 from dotenv import load_dotenv
 
 load_dotenv() # load environment variables from .env
 
 MODEL = "claude-haiku-4-5-20251001"
-anthropic = Anthropic()
+anthropic = Anthropic() 
 
 
 def server_params(server_script_path: str) -> StdioServerParameters:
@@ -33,7 +34,7 @@ def server_params(server_script_path: str) -> StdioServerParameters:
 async def process_query(client: Client, query: str) -> str:
     """Process a query using Claude and available tools"""
     # this functon can be modified to handle custom tool types
-    messages = [
+    messages: list[MessageParam] = [
         {
             "role": "user",
             "content": query
@@ -41,9 +42,9 @@ async def process_query(client: Client, query: str) -> str:
     ]
 
     tool_list = await client.list_tools()
-    available_tools = [{
+    available_tools: list[ToolUnionParam] = [{
         "name": tool.name,
-        "description": tool.description,
+        "description": tool.description or "",
         "input_schema": tool.input_schema
     } for tool in tool_list.tools]
 
