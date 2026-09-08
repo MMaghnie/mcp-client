@@ -3,7 +3,34 @@
 Mainly following the official tutorial from Anthropic:
 [Build an MCP client](https://modelcontextprotocol.io/docs/2026-07-28/develop/build-client)
 
-## Implementation notes:
+
+## To simply run this demo without going through the tutorial
+
+```bash
+# First clone repo for MCP Server
+git clone https://github.com/MMaghnie/mcp-server
+
+# Then clone this MCP Client repo & navigate to it
+git clone https://github.com/MMaghnie/mcp-client.git
+cd mcp-client
+
+# Create virtual env
+uv venv 
+
+# Activate virtual env (on Windows)
+.venv\Scripts\activate
+
+# Install dependencies
+uv sync 
+
+# Run the MCP Client and the MCP Server
+uv run client.py ..\mcp-server\mcp-server.py 
+```
+
+You can then ask the LLM about the weather.
+
+
+## Implementation notes for following the tutorial:
 
 These notes are specifically about the [Imports and Setup](https://modelcontextprotocol.io/docs/2026-07-28/develop/build-client#imports-and-setup) step.
 
@@ -47,3 +74,4 @@ The code in this demo is intentionally kept simple for training purposes and it'
 
 * Nothing checks what's exactly at the server path before running it.
 
+Read more about best practices for scalability with MCP clients here: [Client Best Practices](https://modelcontextprotocol.io/docs/2026-07-28/develop/clients/client-best-practices)
